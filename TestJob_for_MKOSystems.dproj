@@ -144,8 +144,8 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="UAppTypes.pas"/>
-        <DCCReference Include="USearchEntriesSubstrInFile.pas">
-            <Form>FmSearchEntriesSubstrInFile</Form>
+        <DCCReference Include="USearchStringEntriesInFile.pas">
+            <Form>FmSearchStringEntriesInFile</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Base">

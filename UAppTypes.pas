@@ -12,6 +12,7 @@ Const
   TaskIsDone        = 2;
 
 type
+  // массив позиций вхождений для строки поиска
   TInt64Array = array of int64;
 
   // рекорд для поиска вхождений строки в файле
@@ -75,49 +76,49 @@ var
 
 
 
-function GetFilesMasks(FilesMasksString, Delimiter: String): TStringDynArray;
+function GetStringsArrayFromString(InputsString, Delimiter: String): TStringDynArray;
 
 
 
 implementation
 
 
-// формируем из строки список масок
-function GetFilesMasks(FilesMasksString, Delimiter: String): TStringDynArray;
+// формируем из строки список подстрок
+function GetStringsArrayFromString(InputsString, Delimiter: String): TStringDynArray;
 var
   DelimiterPos: Integer;
   ResultArray: TStringDynArray;
-  TempFilesMasksString, TempMasksString: string;
+  TempInputsString, TempSubString: string;
 begin
   SetLength(ResultArray, 0);
-  TempFilesMasksString := FilesMasksString;
+  TempInputsString := InputsString;
 
-  if Length(TempFilesMasksString) > 0 then
+  if Length(TempInputsString) > 0 then
     repeat
-      DelimiterPos := Pos(Delimiter, TempFilesMasksString);
+      DelimiterPos := Pos(Delimiter, InputsString);
 
       If DelimiterPos > 0 then
       begin
         // выделяем в маску из строки масок подстроку до разделителя
-        TempMasksString := TrimLeft(TrimRight(Copy(TempFilesMasksString, 0, DelimiterPos - 1)));
+        TempSubString := TrimLeft(TrimRight(Copy(TempInputsString, 0, DelimiterPos - 1)));
 
         // добавляем в массив если не пустая строка
-        if Length(TempMasksString) > 0 then
+        if Length(TempSubString) > 0 then
         begin
           SetLength(ResultArray, Length(ResultArray) + 1);
-          ResultArray[Length(ResultArray) - 1] := TempMasksString;
+          ResultArray[Length(ResultArray) - 1] := TempSubString;
         end;
 
         // копируем в стоку всё что есть после разделителя
-        TempFilesMasksString := Copy(TempFilesMasksString, DelimiterPos + 1,
-                                     Length(TempFilesMasksString) - DelimiterPos);
+        TempInputsString := Copy(TempInputsString, DelimiterPos + 1,
+                                     Length(TempInputsString) - DelimiterPos);
       end else
       // нет разделителей или они кончились
       // добавляем в массив если не пустая строка
-      if Length(TrimLeft(TrimRight(TempFilesMasksString))) > 0 then
+      if Length(TrimLeft(TrimRight(TempInputsString))) > 0 then
       begin
         SetLength(ResultArray, Length(ResultArray) + 1);
-        ResultArray[Length(ResultArray) - 1] := TrimLeft(TrimRight(TempFilesMasksString));
+        ResultArray[Length(ResultArray) - 1] := TrimLeft(TrimRight(TempInputsString));
       end;
     until DelimiterPos = 0
   else

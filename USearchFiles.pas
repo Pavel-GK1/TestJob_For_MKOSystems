@@ -78,7 +78,7 @@ begin
   close;
 
   // установим статус выполненя
-  // найдём задачу в списке задач
+  // найдём задачу в списке задач главного окна программы
   Itm := nil;
   for I := 0 to FmMain.LvTasksList.GetCount - 1 do
   if TaskRecord.TaskFunctionDescription = FmMain.LvTasksList.items[i].caption then
@@ -109,6 +109,7 @@ begin
 //    if not cbIncludeDirectories.Checked and cbIncludeFiles.Checked then
 //      FilesList := TDirectory.GetFiles(editPath.Text, editFileMask.Text, LSearchOption);
 
+  // поиск выполняем в потоке
   Thread := TThread.CreateAnonymousThread(
     procedure
     begin
@@ -123,7 +124,7 @@ begin
           begin
             setlength(MasksList, 0);
             // получим список масок для поиска файлов, маски должны разделяться запятыми
-            MasksList := GetFilesMasks(edFileMask.text, ',');
+            MasksList := GetStringsArrayFromString(edFileMask.text, ',');
             // список найденных файлов
             Fileslist := SearchFilesFunc(EdDirPath.Text, MasksList);
           end;

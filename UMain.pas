@@ -45,7 +45,7 @@ implementation
 {$R *.dfm}
 
 Uses
-  USearchFiles, USearchEntriesSubstrInFile;
+  USearchFiles, USearchStringEntriesInFile;
 
 
 // Не будем мудрствоовать, возьмём списки экспортируемых из DLL функций
@@ -71,7 +71,7 @@ begin
 
       if Assigned(GetTasksListInLibrary) then
       begin
-        // список найденных функций
+        // список найденных задач
         Taskslist := GetTasksListInLibrary;
       end;
     end;
@@ -98,7 +98,7 @@ begin
 
       if Assigned(GetTasksListInLibrary) then
       begin
-        // список найденных функций
+        // список найденных задач
         Taskslist := GetTasksListInLibrary;
       end;
     end;
@@ -152,16 +152,15 @@ begin
        end else
          ShowMessage('Задача "' + Task.TaskFunctionDescription + '" уже запущена!' +
                       'Процесс выполнения ещё не завершился.' );
-    2: if not Assigned(FmSearchEntriesSubstrInFile.ProgressForm) then
+    2: if not Assigned(FmSearchStringEntriesInFile.ProgressForm) then
        // процесс выполнения не запущен - запускаем задачу
        begin
-         FmSearchEntriesSubstrInFile.TaskRecord := Task;
-         FmSearchEntriesSubstrInFile.PC_SearchEntries.TabIndex :=0;
-         FmSearchEntriesSubstrInFile.Show;
+         FmSearchStringEntriesInFile.TaskRecord := Task;
+         FmSearchStringEntriesInFile.PC_SearchEntries.TabIndex :=0;
+         FmSearchStringEntriesInFile.Show;
        end else
          ShowMessage('Задача "' + Task.TaskFunctionDescription + '" уже запущена!' +
                       'Процесс выполнения ещё не завершился.' );
-
   end;
 end;
 

@@ -7,7 +7,7 @@ uses
   USearchFiles in 'USearchFiles.pas' {FmSearchFiles},
   UTaskProgress in 'UTaskProgress.pas' {fmTaskProgress},
   UAppTypes in 'UAppTypes.pas',
-  USearchEntriesSubstrInFile in 'USearchEntriesSubstrInFile.pas' {FmSearchEntriesSubstrInFile};
+  USearchStringEntriesInFile in 'USearchStringEntriesInFile.pas' {FmSearchStringEntriesInFile};
 
 {$R *.res}
 
@@ -17,6 +17,6 @@ begin
   Application.CreateForm(TFmMain, FmMain);
   Application.CreateForm(TSelectDirectory, SelectDirectory);
   Application.CreateForm(TFmSearchFiles, FmSearchFiles);
-  Application.CreateForm(TFmSearchEntriesSubstrInFile, FmSearchEntriesSubstrInFile);
+  Application.CreateForm(TFmSearchStringEntriesInFile, FmSearchStringEntriesInFile);
   Application.Run;
 end.
