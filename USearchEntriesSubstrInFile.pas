@@ -6,7 +6,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages,
   System.SysUtils, System.Variants, System.Classes, System.Types,
-  System.DateUtils,
+  System.DateUtils, System.IOUtils, System.UITypes,
+  Generics.Collections,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.Buttons, Vcl.ComCtrls,
 
@@ -34,21 +35,21 @@ type
     procedure BtnCloseClick(Sender: TObject);
     procedure BtnSearchEntriesClick(Sender: TObject);
     procedure TmrStartFillEntriesListTimer(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     LibHandle: THandle;
     SearchEntriesFunc: TSearchEntriesFunc;
     Thread: TThread;
-    EntriesList: TInt64Array;
-    MasksList: TStringDynArray;
+    EntriesList: TResultEntiesSearchList;
+    SearchSubstringsList: TStringDynArray;
     Itm: TlistItem;
-
-    Encoding: TEncoding;
 
   public
     { Public declarations }
 
-    TaskDescription: string;
+    TaskRecord: TTaskRecord;
     ProgressForm:TfmProgressOfJob;
   end;
 
@@ -106,7 +107,7 @@ begin
   // найдём задачу в списке задач
   Itm := nil;
   for I := 0 to FmMain.LvTasksList.GetCount - 1 do
-  if TaskDescription = FmMain.LvTasksList.items[i].caption then
+  if TaskRecord.TaskFunctionDescription = FmMain.LvTasksList.items[i].caption then
   begin
     Itm := FmMain.LvTasksList.items[i];
     Itm.SubItems[0] := 'выполняется';
@@ -115,7 +116,7 @@ begin
 
   // показываем окно процесса выполнения
   ProgressForm := TfmProgressOfJob.Create(self);
-  ProgressForm.LblTaskDescription.Caption := TaskDescription;
+  ProgressForm.LblTaskDescription.Caption := TaskRecord.TaskFunctionDescription;
   ProgressForm.show;
 
   Thread := TThread.CreateAnonymousThread(
@@ -126,16 +127,15 @@ begin
 
         if LibHandle <> 0 then
         begin
-          SearchEntriesFunc := GetProcAddress(LibHandle, 'FindByteArrayInFile');
+          SearchEntriesFunc := GetProcAddress(LibHandle, PwideChar(TaskRecord.TaskFunctionName)); //'FindByteArrayInFile'
 
           if Assigned(SearchEntriesFunc) then
           begin
-            setlength(MasksList, 0);
+            setlength(SearchSubstringsList, 0);
             // получим список масок для поиска файлов, маски должны разделяться запятыми
-//            MasksList := GetFilesMasks(edFileMask.text, ',');
+            SearchSubstringsList := GetFilesMasks(edSubStrForSearch.text, ',');
             // список найденных файлов
-            Entrieslist := SearchEntriesFunc(EdFilePath.Text,
-                                             Encoding.Default.GetBytes(edSubStrForSearch.text));
+            SearchEntriesFunc(EdFilePath.Text, SearchSubstringsList, EntriesList);
           end;
         end;
 
@@ -154,22 +154,32 @@ begin
   Thread.Start;
 end;
 
+
+// ТАЙМЕР ЗАПОЛНЕНИЯ СПИСКА РЕЗУЛЬТАТОВ ПОИСКА
 procedure TFmSearchEntriesSubstrInFile.TmrStartFillEntriesListTimer(
   Sender: TObject);
-var i: integer;
+var i, j: integer;
 begin
   TmrStartFillEntriesList.Enabled := false;
 
   // заполняем список найденных файлов
   LbResults.Clear;
-  for I := 0 to Length(EntriesList) - 1 do
+  for I := 0 to EntriesList.Count - 1 do
   begin
-    LbResults.Items.Add('в позиции : ' + IntToStr(EntriesList[I]));
+    // искомая строка
+    LbResults.Items.Add('Строка поиска : ' + EntriesList.items[I].Searchstring +
+                        ', вхождений : ' +
+                        IntToStr(Length(EntriesList.items[I].ResultsArray)));
+
+    // результаты вхождений для искомой строки
+    for j := 0 to Length(EntriesList.items[I].ResultsArray) - 1 do
+      LbResults.Items.Add('в позиции : ' + IntToStr(EntriesList.items[I].ResultsArray[j]));
+
     Application.ProcessMessages;
   end;
 
-  // количество найденных файлов
-  LblEntriesCount.Caption := IntToStr(Length(EntriesList));
+  // сколько строк введено для поиска
+  LblEntriesCount.Caption := IntToStr(EntriesList.Count);
 
   // закрываем форму процесса выполнения задачи
   ProgressForm.close;
@@ -187,6 +197,18 @@ begin
   PC_SearchEntries.TabIndex := 1;
   Show;
 end;
+
+
+procedure TFmSearchEntriesSubstrInFile.FormCreate(Sender: TObject);
+begin
+  EntriesList := TList<TEntriesRecort>.create;
+end;
+
+procedure TFmSearchEntriesSubstrInFile.FormDestroy(Sender: TObject);
+begin
+  EntriesList.free;
+end;
+
 
 
 end.

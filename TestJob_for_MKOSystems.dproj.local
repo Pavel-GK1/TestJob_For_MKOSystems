@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.981,=D:\My_Projects\TestJob_For_MKOSystems\USelectDirectory.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.373,D:\My_Projects\TestJob_For_MKOSystems\USearchEntriesSubstrInFile.pas=D:\My_Projects\TestJob_For_MKOSystems\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.914,D:\My_Projects\TestJob_For_MKOSystems\UTaskProgress.pas=D:\My_Projects\TestJob_For_MKOSystems\UProgressOfJob.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.423,D:\My_Projects\TestJob_For_MKOSystems\USearchFiles.dfm=D:\My_Projects\TestJob_For_MKOSystems\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.510,=D:\My_Projects\Stadis\R_A_D_Studio_Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.092,D:\My_Projects\Stadis\R_A_D_Studio_Projects\Unit1.pas=D:\My_Projects\TestJob_For_MKOSystems\UMain.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.914,D:\My_Projects\TestJob_For_MKOSystems\UTaskProgress.dfm=D:\My_Projects\TestJob_For_MKOSystems\UProgressOfJob.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.423,D:\My_Projects\TestJob_For_MKOSystems\USearchFiles.pas=D:\My_Projects\TestJob_For_MKOSystems\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.307,D:\My_Projects\Stadis\R_A_D_Studio_Projects\Project1.dproj=D:\My_Projects\TestJob_For_MKOSystems\TestJob_for_MKOSystems.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.092,D:\My_Projects\Stadis\R_A_D_Studio_Projects\Unit1.dfm=D:\My_Projects\TestJob_For_MKOSystems\UMain.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.373,D:\My_Projects\TestJob_For_MKOSystems\USearchEntriesSubstrInFile.dfm=D:\My_Projects\TestJob_For_MKOSystems\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.910,=D:\My_Projects\TestJob_For_MKOSystems\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.529,=D:\My_Projects\TestJob_For_MKOSystems\Unit1.pas</Transaction>
+    <Transaction>2025.08.04 20:38:22.894,=D:\My_Projects\TestJob_For_MKOSystems\Unit1.pas</Transaction>
+    <Transaction>2025.08.04 20:48:54.196,D:\My_Projects\TestJob_For_MKOSystems\USearchEntriesSubstr_InFile.pas=D:\My_Projects\TestJob_For_MKOSystems\Unit1.pas</Transaction>
+    <Transaction>2025.08.04 20:48:54.196,D:\My_Projects\TestJob_For_MKOSystems\USearchEntriesSubstr_InFile.dfm=D:\My_Projects\TestJob_For_MKOSystems\Unit1.dfm</Transaction>
+    <Transaction>2025.08.04 21:05:09.247,D:\My_Projects\TestJob_For_MKOSystems\USearchEntriesSubstr_InFile.pas=</Transaction>
+  </Transactions>
+</BorlandProject>

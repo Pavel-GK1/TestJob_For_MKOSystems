@@ -23,7 +23,7 @@ type
 
     procedure FormShow(Sender: TObject);
     procedure LvTasksListDblClick(Sender: TObject);
-    procedure ShowTaskForm(Task: TtaskDescription);
+    procedure ShowTaskForm(Task: TtaskRecord);
     procedure BtnRunTaskClick(Sender: TObject);
     procedure BtnCloseClick(Sender: TObject);
   private
@@ -138,7 +138,7 @@ begin
   end;
 end;
 
-procedure TFmMain.ShowTaskForm(Task: TtaskDescription);
+procedure TFmMain.ShowTaskForm(Task: TtaskRecord);
 begin
   case Task.NumTask of
     // ограничим запуск однотипных задач на выполнение одним экземпл€ром
@@ -146,7 +146,7 @@ begin
     0: if not Assigned(FmSearchFiles.ProgressForm) then
        // процесс выполнени€ не запущен - запускаем задачу
        begin
-         FmSearchFiles.TaskDescription := Task.TaskFunctionDescription;
+         FmSearchFiles.TaskRecord := Task;
          FmSearchFiles.PCSearchFiles.TabIndex :=0;
          FmSearchFiles.Show;
        end else
@@ -155,7 +155,7 @@ begin
     2: if not Assigned(FmSearchEntriesSubstrInFile.ProgressForm) then
        // процесс выполнени€ не запущен - запускаем задачу
        begin
-         FmSearchEntriesSubstrInFile.TaskDescription := Task.TaskFunctionDescription;
+         FmSearchEntriesSubstrInFile.TaskRecord := Task;
          FmSearchEntriesSubstrInFile.PC_SearchEntries.TabIndex :=0;
          FmSearchEntriesSubstrInFile.Show;
        end else

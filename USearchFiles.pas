@@ -47,10 +47,9 @@ type
     FilesList, MasksList: TStringDynArray;
     Itm: TlistItem;
 
-    function GetFilesMasks(FilesMasksString, Delimiter: String):TStringDynArray;
   public
     { Public declarations }
-    TaskDescription: string;
+    TaskRecord: TTaskRecord;
     ProgressForm:TfmProgressOfJob;
   end;
 
@@ -71,7 +70,7 @@ end;
 
 procedure TFmSearchFiles.BtnSearchFilesClick(Sender: TObject);
 var
-  LSearchOption: TSearchOption;
+//  LSearchOption: TSearchOption;
   I: Integer;
 
 begin
@@ -82,7 +81,7 @@ begin
   // найдём задачу в списке задач
   Itm := nil;
   for I := 0 to FmMain.LvTasksList.GetCount - 1 do
-  if TaskDescription = FmMain.LvTasksList.items[i].caption then
+  if TaskRecord.TaskFunctionDescription = FmMain.LvTasksList.items[i].caption then
   begin
     Itm := FmMain.LvTasksList.items[i];
     Itm.SubItems[0] := 'выполняется';
@@ -91,14 +90,14 @@ begin
 
   // показываем окно процесса выполнения
   ProgressForm := TfmProgressOfJob.Create(self);
-  ProgressForm.LblTaskDescription.Caption := TaskDescription;
+  ProgressForm.LblTaskDescription.Caption := TaskRecord.TaskFunctionDescription;
   ProgressForm.show;
 
   // где будем искать - пока не используется
-  if cbDoRecursive.Checked then
-    LSearchOption := TSearchOption.soAllDirectories
-  else
-    LSearchOption := TSearchOption.soTopDirectoryOnly;
+//  if cbDoRecursive.Checked then
+//    LSearchOption := TSearchOption.soAllDirectories
+//  else
+//    LSearchOption := TSearchOption.soTopDirectoryOnly;
 
   // всякие разные опции
 //    if cbIncludeDirectories.Checked and cbIncludeFiles.Checked then
@@ -118,7 +117,7 @@ begin
 
         if LibHandle <> 0 then
         begin
-          SearchFilesFunc := GetProcAddress(LibHandle, 'SearchFiles');
+          SearchFilesFunc := GetProcAddress(LibHandle, PwideChar(TaskRecord.TaskFunctionName)); //'SearchFiles');
 
           if Assigned(SearchFilesFunc) then
           begin
@@ -145,52 +144,6 @@ begin
   Thread.Start;
 end;
 
-// формируем из строки список масок
-function TFmSearchFiles.GetFilesMasks(FilesMasksString, Delimiter: String):TStringDynArray;
-var
-  DelimiterPos: Integer;
-  ResultArray: TStringDynArray;
-  TempFilesMasksString, TempMasksString: string;
-begin
-  SetLength(ResultArray, 0);
-  TempFilesMasksString := FilesMasksString;
-
-  if Length(TempFilesMasksString) > 0 then
-    repeat
-      DelimiterPos := Pos(Delimiter, TempFilesMasksString);
-
-      If DelimiterPos > 0 then
-      begin
-        // выделяем в маску из строки масок подстроку до разделителя
-        TempMasksString := TrimLeft(TrimRight(Copy(TempFilesMasksString, 0, DelimiterPos - 1)));
-
-        // добавляем в массив если не пустая строка
-        if Length(TempMasksString) > 0 then
-        begin
-          SetLength(ResultArray, Length(ResultArray) + 1);
-          ResultArray[Length(ResultArray) - 1] := TempMasksString;
-        end;
-
-        // копируем в стоку всё что есть после разделителя
-        TempFilesMasksString := Copy(TempFilesMasksString, DelimiterPos + 1,
-                                     Length(TempFilesMasksString) - DelimiterPos);
-      end else
-      // нет разделителей или они кончились
-      // добавляем в массив если не пустая строка
-      if Length(TrimLeft(TrimRight(TempFilesMasksString))) > 0 then
-      begin
-        SetLength(ResultArray, Length(ResultArray) + 1);
-        ResultArray[Length(ResultArray) - 1] := TrimLeft(TrimRight(TempFilesMasksString));
-      end;
-    until DelimiterPos = 0
-  else
-    begin // маска на все файлы, если строка масок введена пустой
-      SetLength(ResultArray, 1);
-      ResultArray[0] := '*.*';
-    end;
-
-  Result := ResultArray;
-end;
 
 // выбор папки для поиска
 procedure TFmSearchFiles.sbGetDirPathClick(Sender: TObject);
@@ -218,6 +171,7 @@ begin
     EdDirPath.text := IncludeTrailingPathDelimiter(SelectDirectory.DirectoryListBox.Directory);
 end;
 
+// ТАЙМЕР ЗАПОЛНЕНИЯ СПИСКА РЕЗУЛЬТАТОВ ПОИСКА
 procedure TFmSearchFiles.TmrStartFillFilesListTimer(Sender: TObject);
 var i: integer;
 begin
@@ -228,6 +182,7 @@ begin
   for I := 0 to Length(FilesList) - 1 do
   begin
     LbResults.Items.Add(FilesList[I]);
+
     Application.ProcessMessages;
   end;
 

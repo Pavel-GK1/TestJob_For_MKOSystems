@@ -25,6 +25,7 @@ uses
   System.Generics.Defaults,
   System.UITypes,
   VCL.Dialogs,
+  Generics.Collections,
   UappTypes
 ;
 
@@ -76,7 +77,7 @@ begin
   except
     on E:exception do
     begin
-      MessageDlg('Некорректный путь или маска поиска - -' + E.Message, mtError, [mbOK], 0);
+      MessageDlg('Некорректный путь или маска поиска - ' + E.Message, mtError, [mbOK], 0);
       Exit;
     end;
   end;
@@ -114,7 +115,7 @@ begin
   end;
 end;
 
-function FindByteArrayInFile(const FileName: string; const SearchArray: array of Byte): TInt64Array; stdcall;
+function Find_BytesArray_InFile(const FileName: string; const SearchArray: array of Byte): TInt64Array;
 var
   FS: TFileStream;
   Buffer: array of Byte;
@@ -168,6 +169,50 @@ begin
   finally
     FS.Free;
     Result := ResultArray;
+  end;
+end;
+
+function FindByteArrayInFile(const FileName: string; const SearchArray: TStringDynArray;
+                             out EntriesList: TResultEntiesSearchList): Boolean; stdcall;
+var
+  Entries: TInt64Array;
+  I: Integer;
+  EntriesRec: TEntriesRecort;
+  Searchbytes: tbytes;
+  Encoding: Tencoding;
+begin
+  // очищаем список результатов
+  EntriesList.Clear;
+  Result := False;
+
+  try
+    // перебираем массив строк, для которых ищем вхождения
+    for I := 0 to Length(SearchArray) - 1 do
+    begin
+      // преобразуем строку в массив байт
+      Searchbytes := Encoding.Default.GetBytes(SearchArray[I]);
+
+      // ищем вхождения в файле для массива байт строки поиска
+      Entries := Find_BytesArray_InFile(FileName, Searchbytes);
+
+      // заполняем рекорд для списка результатов
+      EntriesRec.Searchstring := SearchArray[i];
+      EntriesRec.SearchBytesArray := Searchbytes;
+      EntriesRec.ResultsArray := Entries;
+
+      // добавляем результат в список
+      EntriesList.Add(EntriesRec);
+    end;
+
+    // список не пуст - значит поиск удался :)
+    Result := EntriesList.Count >0;
+
+  except
+    on E:exception do
+    begin
+      MessageDlg('Ошибка поиска вхождений строки в файле -' + E.Message, mtError, [mbOK], 0);
+      Exit;
+    end;
   end;
 end;
 

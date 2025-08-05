@@ -26,8 +26,6 @@ object FmSearchFiles: TFmSearchFiles
     Caption = #1047#1072#1082#1088#1099#1090#1100
     TabOrder = 0
     OnClick = BtnCloseClick
-    ExplicitLeft = 460
-    ExplicitTop = 334
   end
   object PCSearchFiles: TPageControl
     Left = 8
@@ -92,7 +90,6 @@ object FmSearchFiles: TFmSearchFiles
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
         Text = 'd:\My_Projects\TestJob_For_MKOSystems'
-        ExplicitWidth = 485
       end
       object edFileMask: TEdit
         Left = 3
@@ -102,7 +99,6 @@ object FmSearchFiles: TFmSearchFiles
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 1
         Text = '*.*'
-        ExplicitWidth = 485
       end
       object cbDoRecursive: TCheckBox
         Left = 3
@@ -111,6 +107,7 @@ object FmSearchFiles: TFmSearchFiles
         Height = 17
         Caption = #1048#1089#1082#1072#1090#1100' '#1074#1086' '#1074#1083#1086#1078#1077#1085#1085#1099#1093' '#1087#1072#1087#1082#1072#1093
         Checked = True
+        Enabled = False
         State = cbChecked
         TabOrder = 2
       end
@@ -123,7 +120,6 @@ object FmSearchFiles: TFmSearchFiles
         Caption = #1048#1089#1082#1072#1090#1100' '#1092#1072#1081#1083#1099
         TabOrder = 3
         OnClick = BtnSearchFilesClick
-        ExplicitTop = 147
       end
     end
     object TS2_ResultTask: TTabSheet
@@ -154,8 +150,6 @@ object FmSearchFiles: TFmSearchFiles
         Anchors = [akLeft, akTop, akRight, akBottom]
         ItemHeight = 15
         TabOrder = 0
-        ExplicitWidth = 657
-        ExplicitHeight = 249
       end
     end
   end

@@ -12,6 +12,8 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     644
     221)
@@ -21,7 +23,7 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
     Top = 8
     Width = 627
     Height = 172
-    ActivePage = TS2_ResultTask
+    ActivePage = TS1_ParamsTask
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object TS1_ParamsTask: TTabSheet
@@ -86,7 +88,6 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 1
         Text = 'abc'
-        ExplicitWidth = 617
       end
       object BtnSearchEntries: TButton
         Left = 3
@@ -97,7 +98,6 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
         Caption = #1053#1072#1095#1072#1090#1100' '#1087#1086#1080#1089#1082
         TabOrder = 2
         OnClick = BtnSearchEntriesClick
-        ExplicitTop = 146
       end
     end
     object TS2_ResultTask: TTabSheet
@@ -107,7 +107,7 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
         619
         142)
       object LblEntriesCount: TLabel
-        Left = 192
+        Left = 136
         Top = 3
         Width = 84
         Height = 15
@@ -116,9 +116,9 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
       object Label1: TLabel
         Left = 16
         Top = 3
-        Width = 159
+        Width = 103
         Height = 15
-        Caption = #1053#1072#1081#1076#1077#1085#1086' '#1074#1093#1086#1078#1076#1077#1085#1080#1081' '#1089#1090#1088#1086#1082#1080' :'
+        Caption = #1057#1090#1088#1086#1082' '#1076#1083#1103' '#1087#1086#1080#1089#1082#1072' :'
       end
       object LbResults: TListBox
         Left = 16
@@ -128,8 +128,6 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
         Anchors = [akLeft, akTop, akRight, akBottom]
         ItemHeight = 15
         TabOrder = 0
-        ExplicitWidth = 649
-        ExplicitHeight = 137
       end
     end
   end
@@ -142,8 +140,6 @@ object FmSearchEntriesSubstrInFile: TFmSearchEntriesSubstrInFile
     Caption = #1047#1072#1082#1088#1099#1090#1100
     TabOrder = 1
     OnClick = BtnCloseClick
-    ExplicitLeft = 460
-    ExplicitTop = 334
   end
   object TmrStartFillEntriesList: TTimer
     Enabled = False
