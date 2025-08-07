@@ -26,24 +26,32 @@ uses
 {$R *.res}
 
 
-type
-  TProcessCompletionCallback = procedure(ExitCode: DWORD) of object;
-
-
-Function GetTasksListInLibrary: TStringDynArray; stdcall;
+// Ќе будем мудрствовать, возьмЄм списки экспортируемых из DLL функций
+// из специально подготовленных рутин в библиотеках
+// код дублируетс€, некрасиво, но пока оставим так
+Function GetTasksListInLibrary(DllName: string): TStringDynArray; stdcall;
 var
   TasksList: TStringDynArray;
+  i: Integer;
 begin
-  setLength(TasksList,1);
+  setLength(TasksList, 0);
 
-  TasksList[0] := allTasksDescription[3].TaskFunctionDescription;
+  For i:= 0 to PossibleTaskCount- 1 do
+  With allTasksDescription[i] do
+  if FromDll = DllName then
+  if IsAvailable then
+  begin
+    setLength(TasksList, Length(TasksList) + 1);
+    TasksList[Length(TasksList) - 1] := allTasksDescription[i].TaskFunctionDescription;
+  end;
 
   result := TasksList;
 end;
 
 
-// метод через CreateProcess
-function ExecuteCommand_And_Wait(const CommandLine: string; out ExitCode: DWORD): Boolean;
+// метод выполнени€ через CreateProcess
+// с возаратом кода завершени€
+function ExecuteCommand(const CommandLine: string; out ExitCode: DWORD): Boolean; stdcall;
 var
   StartupInfo: TStartupInfo;
   ProcessInfo: TProcessInformation;
@@ -51,11 +59,13 @@ begin
   FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
   StartupInfo.cb := SizeOf(TStartupInfo);
   StartupInfo.dwFlags := STARTF_USESHOWWINDOW;
-  StartupInfo.wShowWindow := SW_HIDE; // или SW_SHOW дл€ видимого окна
+  StartupInfo.wShowWindow := SW_SHOW; // или SW_SHOW дл€ видимого окна
 
-  Result := CreateProcess(nil, PChar(CommandLine), nil, nil, False,
-    CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil, StartupInfo, ProcessInfo);
+  ExitCode := 65535;
 
+  Result := CreateProcess(nil, PwideChar(CommandLine), nil, nil, False,
+                          CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil,
+                          StartupInfo, ProcessInfo);
   if Result then
   begin
     try
@@ -63,6 +73,7 @@ begin
       WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
       // ѕолучаем код возврата
       GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+
     finally
       CloseHandle(ProcessInfo.hProcess);
       CloseHandle(ProcessInfo.hThread);
@@ -71,8 +82,10 @@ begin
 end;
 
 
-// метод асинхронного выполнени€ с Callback уведомлением
-procedure ExecuteCommand_Async(const CommandLine: string; Callback: TProcessCompletionCallback);
+// метод асинхронного выполнени€ через CreateProcess
+// в потоке с Callback уведомлением - как оказалось вызывает ошибку
+procedure AsyncExecuteCommandCB(const CommandLine: string;
+                                OnProcessCompletion: TOnProcessCompletion); stdcall;
 var
   Thread: TThread;
 begin
@@ -82,41 +95,49 @@ begin
       StartupInfo: TStartupInfo;
       ProcessInfo: TProcessInformation;
       ExitCode: DWORD;
+      Result: boolean;
+
     begin
       FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
       StartupInfo.cb := SizeOf(TStartupInfo);
       StartupInfo.dwFlags := STARTF_USESHOWWINDOW;
-      StartupInfo.wShowWindow := SW_HIDE;
+      StartupInfo.wShowWindow := SW_SHOW;
 
-      if CreateProcess(nil, PChar(CommandLine), nil, nil, False,
-        CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil, StartupInfo, ProcessInfo) then
+      ExitCode := 65535;
+
+      result := CreateProcess(nil, PChar(string(CommandLine)), nil, nil, False,
+                              CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil,
+                              StartupInfo, ProcessInfo);
+      if result then
       begin
         try
           WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
           GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
 
-          // ¬ызываем callback в основном потоке
-          TThread.Synchronize(nil,
-            procedure
-            begin
-              if Assigned(Callback) then
-                Callback(ExitCode);
-            end);
         finally
           CloseHandle(ProcessInfo.hProcess);
           CloseHandle(ProcessInfo.hThread);
         end;
       end;
-    end);
+
+      // ¬ызываем callback в основном потоке
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          if Assigned(OnProcessCompletion) then
+            OnProcessCompletion(ExitCode);
+        end);
+
+    end
+    );
 
   Thread.FreeOnTerminate := True;
-
   Thread.Start;
 end;
 
 
-// метод с использованием ShellExecuteEx с уведомлением
-function Execute_And_Wait(const CommandLine: string; out ExitCode: DWORD): Boolean;
+// метод с использованием ShellExecuteEx с возвратом кода завершени€
+function ExecuteSE(const CommandLine: string; out ExitCode: DWORD): Boolean; stdcall;
 var
   SEInfo: TShellExecuteInfo;
 begin
@@ -148,9 +169,9 @@ end;
 
 exports
   GetTasksListInLibrary,
-//  ExecuteCommand_And_Wait,
-  ExecuteCommand_Async
-//,  Execute_And_Wait
+  ExecuteCommand,
+  AsyncExecuteCommandCB,
+  ExecuteSE
   ;
 
 begin

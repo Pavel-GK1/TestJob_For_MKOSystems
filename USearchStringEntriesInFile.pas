@@ -12,7 +12,8 @@ uses
   Vcl.Buttons, Vcl.ComCtrls, Vcl.ExtCtrls,
 
   UAppTypes,
-  UProgressOfJob
+  UTaskProgress,
+  Ulog
   ;
 
 type
@@ -31,29 +32,39 @@ type
     LbResults: TListBox;
     BtnClose: TButton;
     TmrStartFillEntriesList: TTimer;
-
-    procedure sbGetFilePathClick(Sender: TObject);
-    procedure BtnSearchEntriesClick(Sender: TObject);
-    procedure TmrStartFillEntriesListTimer(Sender: TObject);
+    TS3_Logs: TTabSheet;
+    MemoLog: TMemo;
 
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnCloseClick(Sender: TObject);
 
+    procedure sbGetFilePathClick(Sender: TObject);
+    procedure BtnSearchEntriesClick(Sender: TObject);
+
+    // штатное завершение задачи
+    procedure FOnTaskDone;
+    // завершение задачи по прерыванию
+    procedure FOnTaskAbort;
+
   private
     { Private declarations }
     LibHandle: THandle;
-    SearchEntriesFunc: TSearchEntriesFunc;
     Thread: TThread;
     EntriesList: TResultEntiesSearchList;
     SearchStringsList: TStringDynArray;
     Itm: TlistItem;
 
+    // функция, подгружаемая из библиотеки
+    SearchEntriesFunc: TSearchEntriesFunc;
+
+    // сюда будем складывать кости
+    Log: Tlog;
   public
     { Public declarations }
 
     TaskRecord: TTaskRecord;
-    ProgressForm:TfmProgressOfJob;
+    ProgressForm: TfmTaskProgress;
   end;
 
 var
@@ -65,6 +76,27 @@ implementation
 
 uses
   UMain, USelectDirectory;
+
+
+procedure TFmSearchStringEntriesInFile.FormCreate(Sender: TObject);
+begin
+  EntriesList := TList<TEntriesRecort>.create;
+
+  // создаём логи
+  Log := TLog.Create(GetlogFileName('SearchEntries'), MemoLog);
+end;
+
+procedure TFmSearchStringEntriesInFile.FormDestroy(Sender: TObject);
+begin
+  EntriesList.free;
+  Log.Free;
+end;
+
+procedure TFmSearchStringEntriesInFile.BtnCloseClick(Sender: TObject);
+begin
+  close;
+end;
+
 
 // выбор файла для сканирования вхождений строк
 procedure TFmSearchStringEntriesInFile.sbGetFilePathClick(Sender: TObject);
@@ -98,9 +130,11 @@ procedure TFmSearchStringEntriesInFile.BtnSearchEntriesClick(Sender: TObject);
 var
   i: integer;
 begin
-  // прячем форму
-  close;
+  // очищаем результаты
+  LbResults.Clear;
+  LblEntriesCount.Caption := '0';
 
+  // код дублируется, некрасиво, но оставим пока так
   // установим статус выполненя
   // найдём задачу в списке задач главного окна программы
   Itm := nil;
@@ -112,9 +146,15 @@ begin
     Itm.SubItems[1] := DateTimeToStr(Now);
   end;
 
+  Log.AddMes('Начато выполнение задачи "' + Itm.caption + '"');
+  Log.AddMes('стартовая папка "' + EdFilePath.Text + '"');
+  Log.AddMes('строка(строки) поиска "' + edSubStrForSearch.Text + '"');
+
   // показываем окно процесса выполнения
-  ProgressForm := TfmProgressOfJob.Create(self);
+  ProgressForm := TfmTaskProgress.Create(self);
   ProgressForm.LblTaskDescription.Caption := TaskRecord.TaskFunctionDescription;
+  ProgressForm.OnTaskAbort := FOnTaskAbort;
+  ProgressForm.BtnAbortTask.enabled := false;
   ProgressForm.show;
 
   // поиск выполняем в потоке
@@ -135,17 +175,19 @@ begin
             SearchStringsList := GetStringsArrayFromString(edSubStrForSearch.text, ',');
             // поиск вхождений, список найденных вхождений по всем строкам поиска - EntriesList
             SearchEntriesFunc(EdFilePath.Text, SearchStringsList, EntriesList);
+
+            // синхронизируем с VCL вывод результата
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                FOnTaskDone;
+              end);
           end;
         end;
 
       finally
         SearchEntriesFunc := nil;
         FreeLibrary(LibHandle);
-
-        // в потоке синхронизацию с VCL не будем использовать - включим таймер заполнения списка,
-        // для больших списков используем Application.ProcessMessages, чтобы приложение не зависало
-        // но что-то работает кривовато
-        TmrStartFillEntriesList.Enabled := true;
       end;
     end);
 
@@ -154,64 +196,93 @@ begin
 end;
 
 
-// ТАЙМЕР ЗАПОЛНЕНИЯ СПИСКА РЕЗУЛЬТАТОВ ПОИСКА
-procedure TFmSearchStringEntriesInFile.TmrStartFillEntriesListTimer(
-  Sender: TObject);
-var i, j: integer;
+// штатное завершение задачи
+procedure TFmSearchStringEntriesInFile.FOnTaskDone;
+var
+  i, j: integer;
+  LogStr: string;
+
 begin
-  TmrStartFillEntriesList.Enabled := false;
-
-  // заполняем список найденных файлов
-  LbResults.Clear;
-  for I := 0 to EntriesList.Count - 1 do
-  begin
-    // искомая строка
-    LbResults.Items.Add('Строка поиска : ' + EntriesList.items[I].Searchstring +
-                        ', вхождений : ' +
-                        IntToStr(Length(EntriesList.items[I].ResultsArray)));
-
-    // результаты вхождений для искомой строки
-    for j := 0 to Length(EntriesList.items[I].ResultsArray) - 1 do
-      LbResults.Items.Add('в позиции : ' + IntToStr(EntriesList.items[I].ResultsArray[j]));
-
-    Application.ProcessMessages;
-  end;
-
-  // сколько строк введено для поиска
-  LblEntriesCount.Caption := IntToStr(EntriesList.Count);
-
-  // закрываем форму процесса выполнения задачи
-  ProgressForm.close;
-  FreeAndNil(ProgressForm);
-
   // изменим статус выполнения
   if Assigned(Itm) then
   begin
     Itm.SubItems[0] := 'выполнено (' +
                        IntToStr(SecondsBetween(Now, StrToDateTime(Itm.SubItems[1]))) + ' сек)';
     Itm.SubItems[1] := DateTimeTostr(Now);
+
+    Log.AddMes('Закончено выполнение задачи "' + Itm.caption + '"');
+
+  end;
+  Application.ProcessMessages;
+
+  // заполняем список найденных файлов
+  LbResults.Clear;
+  for I := 0 to EntriesList.Count - 1 do
+  begin
+    // искомая строка
+    LogStr := 'Строка поиска : ' + EntriesList.items[I].Searchstring +
+              ', вхождений : ' +
+              IntToStr(Length(EntriesList.items[I].ResultsArray));
+    LbResults.Items.Add(LogStr);
+    Log.AddMes(LogStr);
+
+    // результаты вхождений для искомой строки
+    for j := 0 to Length(EntriesList.items[I].ResultsArray) - 1 do
+    begin
+      LogStr := 'в позиции : ' + IntToStr(EntriesList.items[I].ResultsArray[j]);
+      LbResults.Items.Add(LogStr);
+      Log.AddMes(LogStr);
+    end;
+
+    Log.AddMes('');
+  end;
+  Application.ProcessMessages;
+
+  // сколько строк введено для поиска
+  LblEntriesCount.Caption := IntToStr(EntriesList.Count);
+
+  // закрываем форму процесса выполнения задачи
+  if assigned(ProgressForm) then
+  begin
+    ProgressForm.close;
+    FreeAndNil(ProgressForm);
   end;
 
   // показываем результат
   PC_SearchEntries.TabIndex := 1;
-  Show;
 end;
 
-
-procedure TFmSearchStringEntriesInFile.FormCreate(Sender: TObject);
+// завершение задачи по прерыванию
+// метод уничтожения потока РАБОТАЕТ НЕКОРРЕКТНО,
+// закрытие главной формы вызывает глобальный ERROR
+procedure TFmSearchStringEntriesInFile.FOnTaskAbort;
 begin
-  EntriesList := TList<TEntriesRecort>.create;
-end;
+{  if assigned(ProgressForm) then
+  begin
+    ProgressForm.close;
+    FreeAndNil(ProgressForm);
+  end;
 
-procedure TFmSearchStringEntriesInFile.FormDestroy(Sender: TObject);
-begin
-  EntriesList.free;
-end;
+  // уничтожаем поток
+  If assigned(Thread) then
+  begin
+    // метод не совсем корректный
+    terminateThread(Thread.Handle, 0);
+    Thread := nil;
+  end;
 
-procedure TFmSearchStringEntriesInFile.BtnCloseClick(Sender: TObject);
-begin
-  close;
-end;
+  // меняем статус выпалнения задачи
+  if assigned(Itm) then
+  begin
+    Itm.SubItems[0] := 'прервано';
+    Itm.SubItems[1] := DateTimeToStr(Now);
 
+    Log.AddMes('Выполнение задачи "' + Itm.caption + '" прервано');
+  end;
+
+  // очищаем разультат поиска
+  lbResults.Clear;
+  LblEntriesCount.Caption := '0';}
+end;
 
 end.

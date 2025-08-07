@@ -32,15 +32,23 @@ uses
 {$R *.res}
 
 
-Function GetTasksListInLibrary: TStringDynArray; stdcall;
+// Не будем мудрствовать, возьмём списки экспортируемых из DLL функций
+// из специально подготовленных рутин в библиотеках
+Function GetTasksListInLibrary(DllName: string): TStringDynArray; stdcall;
 var
   TasksList: TStringDynArray;
   i: Integer;
 begin
-  setLength(TasksList,3);
+  setLength(TasksList, 0);
 
-  For i:= 0 to 2 do
-    TasksList[i] := allTasksDescription[i].TaskFunctionDescription;
+  For i:= 0 to PossibleTaskCount- 1 do
+  With allTasksDescription[i] do
+  if FromDll = DllName then
+  if IsAvailable then
+  begin
+    setLength(TasksList, Length(TasksList) + 1);
+    TasksList[Length(TasksList) - 1] := allTasksDescription[i].TaskFunctionDescription;
+  end;
 
   result := TasksList;
 end;
@@ -52,27 +60,48 @@ begin
 end;
 
 
-Function SearchFiles(StartDir : string; Mask: TStringDynArray ): TStringDynArray; stdcall;
+Function SearchFiles(StartDir : string; Masks: TStringDynArray;
+                     out OutFiles: TstringList): boolean; stdcall;
 var
-  Files: TStringDynArray;
   I: Integer;
   LSearchOption: TSearchOption;
+  Files: TStringDynArray;
 
 begin
+//  if cbDoRecursive.Checked then
+//    LSearchOption := TSearchOption.soAllDirectories
+//  else
+//    LSearchOption := TSearchOption.soTopDirectoryOnly;
+
+  // всякие разные опции
+//    if cbIncludeDirectories.Checked and cbIncludeFiles.Checked then
+//      FilesList := TDirectory.GetFileSystemEntries(editPath.Text, LSearchOption, nil);
+
+//    if cbIncludeDirectories.Checked and not cbIncludeFiles.Checked then
+//      LList := TDirectory.GetDirectories(editPath.Text, editFileMask.Text, LSearchOption);
+
+//    if not cbIncludeDirectories.Checked and cbIncludeFiles.Checked then
+//      FilesList := TDirectory.GetFiles(editPath.Text, editFileMask.Text, LSearchOption);
+  Result := false;
+
   { Опция поиска - во всех директориях }
   LSearchOption := TSearchOption.soAllDirectories;
 
   try
-    setLength(Files,0);
-
-    for I := 0 to Length(Mask) -1 do
-      files := files + TDirectory.GetFiles(StartDir, Mask[I], LSearchOption);
+    setlength(files, 0);
+    // собираем файлы по маскам поиска
+    for I := 0 to Length(Masks) -1 do
+      files := files + TDirectory.GetFiles(StartDir, Masks[I], LSearchOption);
 
     // отсортируем список
     if Length(files) > 0 then
       TArray.Sort<String>(files, TComparer<String>.Construct(CompareLowerStr));
 
-    Result := files;
+    for I := 0 to Length(files) -1 do
+      OutFiles.Add(files[i]);
+
+    setlength(files, 0);
+    Result := OutFiles.Count > 0;
 
   except
     on E:exception do

@@ -13,6 +13,8 @@ object FmSearchFiles: TFmSearchFiles
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     645
     261)
@@ -113,7 +115,7 @@ object FmSearchFiles: TFmSearchFiles
       end
       object BtnSearchFiles: TButton
         Left = 3
-        Top = 146
+        Top = 141
         Width = 105
         Height = 24
         Anchors = [akLeft, akBottom]
@@ -142,22 +144,31 @@ object FmSearchFiles: TFmSearchFiles
         Height = 15
         Caption = #1053#1072#1081#1076#1077#1085#1085#1099#1077' '#1092#1072#1081#1083#1099', '#1074#1089#1077#1075#1086' : '
       end
-      object LbResults: TListBox
-        Left = 16
+      object MemoResults: TMemo
+        Left = 3
         Top = 24
-        Width = 587
-        Height = 144
+        Width = 613
+        Height = 153
         Anchors = [akLeft, akTop, akRight, akBottom]
-        ItemHeight = 15
+        ScrollBars = ssVertical
         TabOrder = 0
       end
     end
-  end
-  object TmrStartFillFilesList: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = TmrStartFillFilesListTimer
-    Left = 488
-    Top = 8
+    object TS3_Logs: TTabSheet
+      Caption = #1051#1086#1075#1080' '#1087#1086' '#1079#1072#1076#1072#1095#1077
+      ImageIndex = 2
+      DesignSize = (
+        619
+        178)
+      object MemoLog: TMemo
+        Left = 3
+        Top = 0
+        Width = 613
+        Height = 177
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+    end
   end
 end

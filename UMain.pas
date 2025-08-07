@@ -45,10 +45,10 @@ implementation
 {$R *.dfm}
 
 Uses
-  USearchFiles, USearchStringEntriesInFile;
+  USearchFiles, USearchStringEntriesInFile, URunShellCommand;
 
 
-// Не будем мудрствоовать, возьмём списки экспортируемых из DLL функций
+// Не будем мудрствовать, возьмём списки экспортируемых из DLL функций
 // из специально подготовленных рутин в библиотеках
 procedure TFmMain.FormShow(Sender: TObject);
 begin
@@ -72,21 +72,13 @@ begin
       if Assigned(GetTasksListInLibrary) then
       begin
         // список найденных задач
-        Taskslist := GetTasksListInLibrary;
+        Taskslist := GetTasksListInLibrary('TestJobDLL1');
       end;
     end;
 
   finally
     GetTasksListInLibrary := nil;
     FreeLibrary(LibHandle);
-  end;
-
-  For i:= 0 to Length(Taskslist) - 1 do
-  begin
-    itm := LvTasksList.Items.Add();
-    itm.Caption := Taskslist[i];
-    itm.SubItems.Add('-');
-    itm.SubItems.Add('-');
   end;
 
   try
@@ -99,7 +91,7 @@ begin
       if Assigned(GetTasksListInLibrary) then
       begin
         // список найденных задач
-        Taskslist := GetTasksListInLibrary;
+        Taskslist := TasksList + GetTasksListInLibrary('TestJobDLL2');
       end;
     end;
 
@@ -108,13 +100,16 @@ begin
     FreeLibrary(LibHandle);
   end;
 
-  itm := LvTasksList.Items.Add();
-  itm.Caption := Taskslist[0];
-  itm.SubItems.Add('-');
-  itm.SubItems.Add('-');
+  // заполняем список задач на форме
+  For i:= 0 to Length(Taskslist) - 1 do
+  begin
+    itm := LvTasksList.Items.Add();
+    itm.Caption := Taskslist[i];
+    itm.SubItems.Add('-');
+    itm.SubItems.Add('-');
+  end;
 
   itm := LvTasksList.Items[0];
-
   itm.Selected := True;
 end;
 
@@ -131,36 +126,53 @@ begin
   if Assigned(itm) then
   for I := Low(allTasksDescription) to High(allTasksDescription) do
   if Itm.Caption = allTasksDescription[i].TaskFunctionDescription then
-  begin
     ShowTaskForm(allTasksDescription[i]);
-
-    break
-  end;
 end;
 
 procedure TFmMain.ShowTaskForm(Task: TtaskRecord);
+var
+  messstr: string;
 begin
+//  NumTaskSearchFiles = 0;
+//  NumTaskFindStringInFile = 1;
+//  NumTaskFindByteArrayInFile = 2;
+//  NumTaskAsyncExecuteCommand = 3;
+
+  messstr := 'Задача "' + Task.TaskFunctionDescription + '" уже запущена! ' +
+             'Процесс выполнения ещё не завершился.';
+
   case Task.NumTask of
     // ограничим запуск однотипных задач на выполнение одним экземпляром
     // не будем запускать форму, если идёт процесс выполнения
-    0: if not Assigned(FmSearchFiles.ProgressForm) then
+    NumTaskSearchFiles :
+       if not Assigned(FmSearchFiles.ProgressForm) then
        // процесс выполнения не запущен - запускаем задачу
        begin
          FmSearchFiles.TaskRecord := Task;
          FmSearchFiles.PCSearchFiles.TabIndex :=0;
          FmSearchFiles.Show;
        end else
-         ShowMessage('Задача "' + Task.TaskFunctionDescription + '" уже запущена!' +
-                      'Процесс выполнения ещё не завершился.' );
-    2: if not Assigned(FmSearchStringEntriesInFile.ProgressForm) then
+         ShowMessage(messstr);
+
+    NumTaskFindByteArrayInFile :
+      if not Assigned(FmSearchStringEntriesInFile.ProgressForm) then
        // процесс выполнения не запущен - запускаем задачу
        begin
          FmSearchStringEntriesInFile.TaskRecord := Task;
          FmSearchStringEntriesInFile.PC_SearchEntries.TabIndex :=0;
          FmSearchStringEntriesInFile.Show;
        end else
-         ShowMessage('Задача "' + Task.TaskFunctionDescription + '" уже запущена!' +
-                      'Процесс выполнения ещё не завершился.' );
+         ShowMessage(messstr);
+
+    NumTaskExecuteCommand :
+      if not Assigned(FmRunShellCommand.ProgressForm) then
+       // процесс выполнения не запущен - запускаем задачу
+       begin
+         FmRunShellCommand.TaskRecord := Task;
+         FmRunShellCommand.PC_ShellCommand.TabIndex :=0;
+         FmRunShellCommand.Show;
+       end else
+         ShowMessage(messstr);
   end;
 end;
 

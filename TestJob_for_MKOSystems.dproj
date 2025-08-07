@@ -148,6 +148,11 @@
             <Form>FmSearchStringEntriesInFile</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="URunShellCommand.pas">
+            <Form>FmRunShellCommand</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="ULog.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -177,12 +182,7 @@
             </Delphi.Personality>
             <Deployment Version="5">
                 <DeployFile LocalName="Win32\Debug\TestJob_for_MKOSystems.exe" Configuration="Debug" Class="ProjectOutput"/>
-                <DeployFile LocalName="Win32\Debug\TestJob_for_MKOSystems.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>TestJob_for_MKOSystems.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
+                <DeployFile LocalName="Win32\Debug\TestJob_for_MKOSystems.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="Win64\Debug\TestJob_for_MKOSystems.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="iOSSimulator">

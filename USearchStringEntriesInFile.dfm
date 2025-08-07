@@ -1,7 +1,7 @@
 object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
   Left = 0
   Top = 0
-  Caption = 'FmSearchStringEntriesInFile'
+  Caption = #1055#1086#1080#1089#1082' '#1074#1093#1086#1078#1076#1077#1085#1080#1081' '#1089#1090#1088#1086#1082#1080' '#1074' '#1092#1072#1081#1083#1077
   ClientHeight = 221
   ClientWidth = 644
   Color = clBtnFace
@@ -39,7 +39,7 @@ object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
         Caption = #1057#1090#1088#1086#1082#1072' '#1087#1086#1080#1089#1082#1072
       end
       object sbGetFilePath: TSpeedButton
-        Left = 573
+        Left = 588
         Top = 29
         Width = 23
         Height = 23
@@ -62,7 +62,6 @@ object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
         ParentShowHint = False
         ShowHint = True
         OnClick = sbGetFilePathClick
-        ExplicitLeft = 503
       end
       object Label2: TLabel
         Left = 3
@@ -74,7 +73,7 @@ object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
       object EdFilePath: TEdit
         Left = 3
         Top = 29
-        Width = 555
+        Width = 576
         Height = 23
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
@@ -83,7 +82,7 @@ object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
       object edSubStrForSearch: TEdit
         Left = 3
         Top = 79
-        Width = 555
+        Width = 576
         Height = 23
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 1
@@ -130,6 +129,22 @@ object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
         TabOrder = 0
       end
     end
+    object TS3_Logs: TTabSheet
+      Caption = #1051#1086#1075#1080' '#1087#1086' '#1079#1072#1076#1072#1095#1077
+      ImageIndex = 2
+      DesignSize = (
+        619
+        142)
+      object MemoLog: TMemo
+        Left = 3
+        Top = 3
+        Width = 613
+        Height = 136
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+    end
   end
   object BtnClose: TButton
     Left = 486
@@ -144,7 +159,6 @@ object FmSearchStringEntriesInFile: TFmSearchStringEntriesInFile
   object TmrStartFillEntriesList: TTimer
     Enabled = False
     Interval = 100
-    OnTimer = TmrStartFillEntriesListTimer
     Left = 280
     Top = 152
   end

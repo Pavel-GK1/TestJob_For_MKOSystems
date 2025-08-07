@@ -32,24 +32,29 @@ object fmTaskProgress: TfmTaskProgress
     ParentFont = False
   end
   object pbProcess: TProgressBar
+    AlignWithMargins = True
     Left = 8
     Top = 26
     Width = 495
     Height = 17
+    Smooth = True
+    Style = pbstMarquee
+    BarColor = clRed
+    SmoothReverse = True
     TabOrder = 0
   end
-  object Button1: TButton
-    Left = 200
+  object BtnAbortTask: TButton
+    Left = 198
     Top = 52
     Width = 125
     Height = 22
     Caption = #1055#1088#1077#1088#1074#1072#1090#1100
-    Enabled = False
     TabOrder = 1
+    OnClick = BtnAbortTaskClick
   end
   object tmrAnimate: TTimer
     Enabled = False
-    Interval = 500
+    Interval = 10
     OnTimer = tmrAnimateTimer
     Left = 37
     Top = 32
